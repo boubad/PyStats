@@ -46,13 +46,11 @@ def read_csv(
                     ss = s.strip()
                     try:
                         x = float(ss)
-                        if x == ValueError:
-                            x = 0.0
                         if hasnames:
                             xdata[i - 1] = x
                         else:
                             xdata[i] = x
-                    except OverflowError:
+                    except ValueError:
                         pass
                 vinds.append(xid)
                 vlistdata.append(xdata)
