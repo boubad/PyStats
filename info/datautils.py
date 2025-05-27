@@ -2,7 +2,7 @@ import numpy as np
 
 
 # ===================
-def bertin_classes(data: np.ndarray, nclasses: int = 5) -> list[int]:
+def bertin_classes(data, nclasses: int = 5) -> list[int]:
     if data.ndim != 1:
         raise ValueError("Input data must be a 1D array.")
     n = data.size
