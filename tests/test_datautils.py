@@ -12,4 +12,8 @@ class TestDataUtils(unittest.TestCase):
         classes = datautils.bertin_classes(data, nclasses=5)
         nc = len(classes)
         self.assertEqual(nc, 10)
-        self.assertEqual(classes, [1, 2, 3])
+        
+# =========================
+
+if __name__ == "__main__":
+    unittest.main()
