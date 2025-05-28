@@ -2,24 +2,22 @@ import numpy as np
 
 
 # ===================
-def bertin_classes(
+def compute_bertin_classes(
     data: np.ndarray, nclasses: int = 5, brefmedian: bool = False
-) -> list[int]:
+) -> tuple[list[int], list[float]]:
     if data.ndim != 1:
         raise ValueError("Input data must be a 1D array.")
     n = data.size
-    if nclasses < 1 or nclasses > n:
+    if nclasses < 2 or nclasses > n:
         raise ValueError(
             "Number of classes must be between 1 and the number of data points."
         )
-    if n == 0:
-        return []
+    if n < 2:
+        raise ValueError("Input data must contain at least two element.")
     vmin = data.min()
     vmax = data.max()
     if vmin >= vmax:
         raise ValueError("Minimum value must be less than maximum value.")
-    if nclasses == 1:
-        return [1] * n  # All values in the same class
     if brefmedian:
         # Use median as the reference value
         vmean = np.median(data)
@@ -76,4 +74,11 @@ def bertin_classes(
             break
         if not bfound:
             classes.append(nclasses)  # Last class for values >= vmax
-    return classes
+    return classes, limits
+
+
+# ===================
+def bertin_classes(
+    data: np.ndarray, nclasses: int = 5, brefmedian: bool = False
+) -> list[int]:
+    return compute_bertin_classes(data, nclasses, brefmedian)[0]

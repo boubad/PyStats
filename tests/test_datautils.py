@@ -1,10 +1,13 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 import unittest
 from info import datautils
 import numpy as np
-# ============ 
+
+
+# ============
 # Test for bertin_classes function in datautils module
 class TestBertinClasses(unittest.TestCase):
     def test_bertin_classes(self):
@@ -23,16 +26,12 @@ class TestBertinClasses(unittest.TestCase):
         with self.assertRaises(ValueError):
             datautils.bertin_classes(data, nclasses=1)
 
-        # Test with an empty array
-        data = np.array([])
-        result = datautils.bertin_classes(data)
-        expected = []
-        self.assertEqual(result, expected)
-
         # Test with invalid nclasses
         data = np.array([1, 2, 3, 4, 5])
         with self.assertRaises(ValueError):
             datautils.bertin_classes(data, nclasses=0)
+
+
 # ==========
 
 

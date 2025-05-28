@@ -5,7 +5,7 @@ import numpy as np
 class DistanceUtils(object):
     def compute_distance_array(
         initialdata: np.ndarray,
-        metric: str = "manhattan",
+        smetric: str = "manhattan",
         axis: int = 0,
         weights: np.ndarray = None,
     ) -> np.ndarray | None:
@@ -23,7 +23,7 @@ class DistanceUtils(object):
                     for j in range(i):
                         if i > j:
                             y = initialdata[j, :]
-                            x = DistanceUtils.distance(ind, y, metric, weights)
+                            x = DistanceUtils.distance(ind, y, smetric, weights)
                             vret[i, j] = x
                             vret[j, i] = x
                 return vret
@@ -34,7 +34,7 @@ class DistanceUtils(object):
                     for j in range(i):
                         if i > j:
                             y = initialdata[:, j]
-                            x = DistanceUtils.distance(ind, y, metric, weights)
+                            x = DistanceUtils.distance(ind, y, smetric, weights)
                             vret[i, j] = x
                             vret[j, i] = x
                 return vret
@@ -53,7 +53,7 @@ class DistanceUtils(object):
     def distance(
         data1: np.ndarray,
         data2: np.ndarray,
-        metric: str = "manhattan",
+        smetric: str = "manhattan",
         weights: np.ndarray = None,
     ) -> float:
         if (data1 is None) or (data2 is None):
@@ -62,8 +62,8 @@ class DistanceUtils(object):
             raise ValueError("invalid input type")
         if data2.ndim != data1.ndim or data1.ndim != 1:
             raise ValueError("invalid input dimension")
-        if metric not in DistanceUtils.get_all_metrics():
-            raise ValueError("invalid metric")
+        if smetric not in DistanceUtils.get_all_metrics():
+            raise ValueError("invalid smetric")
         if weights is not None:
             if not isinstance(weights, np.ndarray):
                 raise ValueError("invalid weights type")
@@ -71,15 +71,15 @@ class DistanceUtils(object):
                 raise ValueError("invalid weights dimension")
             if weights.size != data1.size:
                 raise ValueError("invalid weights size")
-        if metric == "manhattan":
+        if smetric == "manhattan":
             return DistanceUtils.manhattan_distance(data1, data2, weights)
-        elif metric == "maximum":
+        elif smetric == "maximum":
             return DistanceUtils.maximum_distance(data1, data2, weights)
-        elif metric == "jaccard":
+        elif smetric == "jaccard":
             return DistanceUtils.jaccard_distance(data1, data2)
-        elif metric == "canberra":
+        elif smetric == "canberra":
             return DistanceUtils.canberra_distance(data1, data2)
-        elif metric == "binary":
+        elif smetric == "binary":
             return DistanceUtils.binary_distance(data1, data2)
         return DistanceUtils.euclidian_distance(data1, data2, weights)
 

@@ -1,5 +1,5 @@
-from statistics import mean, median
 import numpy as np
+import info.datautils as datautils
 
 
 class Partitioner(object):
@@ -181,34 +181,10 @@ class Partitioner(object):
         vmax = max(d)
         if vmin >= vmax:
             return
-        if refmode == "median":
-            vrefer = median(d)
-        else:
-            vrefer = mean(d)
-        nb = self._nbclasses
-        nb2 = int((nb - 1) / 2)
-        np2 = nb2 + 0.5
-        delta_left = (vrefer - vmin) / np2
-        delta_right = (vmax - vrefer) / np2
-        xleft = vrefer - (delta_left / 2)
-        xright = vrefer + (delta_right / 2)
-        self._limits = [xleft, xright]
-        x = xleft
-        ic = nb2
-        while ic > 0:
-            x -= delta_left
-            if (x < vmin) or (ic == 1):
-                x = vmin
-            ic -= 1
-            self._limits.insert(0, x)
-        x = xright
-        ic = nb2
-        while ic > 0:
-            x += delta_right
-            if (x > vmax) or (ic == 1):
-                x = vmax
-            ic -= 1
-            self._limits.append(x)
+        bmedia = refmode == "median"
+        self._results, self._limits = datautils.compute_bertin_classes(
+            d, self._nbclasses, bmedia
+        )
 
     def __init_uniform(self) -> None:
         self._limits = []
