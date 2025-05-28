@@ -8,12 +8,12 @@ def bertin_classes(
     if data.ndim != 1:
         raise ValueError("Input data must be a 1D array.")
     n = data.size
-    if n == 0:
-        return []
     if nclasses < 1 or nclasses > n:
         raise ValueError(
             "Number of classes must be between 1 and the number of data points."
         )
+    if n == 0:
+        return []
     vmin = data.min()
     vmax = data.max()
     if vmin >= vmax:
