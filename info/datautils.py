@@ -2,7 +2,9 @@ import numpy as np
 
 
 # ===================
-def bertin_classes(data, nclasses: int = 5) -> list[int]:
+def bertin_classes(
+    data: np.ndarray, nclasses: int = 5, brefmedian: bool = False
+) -> list[int]:
     if data.ndim != 1:
         raise ValueError("Input data must be a 1D array.")
     n = data.size
@@ -18,7 +20,15 @@ def bertin_classes(data, nclasses: int = 5) -> list[int]:
         raise ValueError("Minimum value must be less than maximum value.")
     if nclasses == 1:
         return [1] * n  # All values in the same class
-    vmean = data.mean()
+    if brefmedian:
+        # Use median as the reference value
+        vmean = np.median(data)
+    else:
+        # Use mean as the reference value
+        if n == 1:
+            vmean = data[0]
+        else:
+            vmean = data.mean()
     # ensure odd classes number
     if nclasses % 2 == 0:
         nclasses += 1
@@ -28,39 +38,37 @@ def bertin_classes(data, nclasses: int = 5) -> list[int]:
     supdelta = (vmax - vmean) * fconst
     x1 = vmean - (infdelta / 2.0)
     x2 = vmean + (supdelta / 2.0)
-    icur = 0
     limits = [x1, x2]
+    icur = 0
     while x1 > vmin:
         x1 -= infdelta
-        if x1 > vmin:
-            icur += 1
-            if icur < nc2:
-                limits.insert(0, x1)
-            else:
-                limits.insert(0, vmin)
-                break
+        if x1 < vmin:
+            x1 = vmin
+        icur += 1
+        if icur == nc2:
+            x1 = vmin  # Ensure we do not go below vmin
+        limits.insert(0, x1)
     icur = 0
     while x2 < vmax:
         x2 += supdelta
-        if x2 < vmax:
-            icur += 1
-            if icur < nc2:
-                limits.append(x2)
-            else:
-                limits.append(vmax)
-                break
+        if x2 > vmax:
+            x2 = vmax
+        icur += 1
+        if icur == nc2:
+            x2 = vmax
+        limits.append(x2)
+    # Ensure we have nclasses + 1 limits
     nc = len(limits)
-    if nc < nclasses:
+    if nc != nclasses + 1:
         raise ValueError(
             "Not enough classes generated. Increase the number of classes or check the data range."
         )
     classes = []
-    flimits = np.array(limits, dtype=float)
     for i in range(n):
         x = data[i]
         bfound = False
         for j in range(nclasses):
-            y = flimits[j + 1]
+            y = limits[j + 1]
             if x > y:
                 continue
             classes.append(j + 1)
