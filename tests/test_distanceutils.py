@@ -13,9 +13,8 @@ import numpy as np
 class DistanceUtilsTestCase(unittest.TestCase):
     def test_compute_distance_array(self):
         data = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], dtype=float)
-        du = distanceutils.DistanceUtils()
-        result = du.compute_distance_array(data)
-        expected = np.array([[0.0, 3.0], [3.0, 0.0]])
+        result = distanceutils.DistanceUtils.compute_distance_array(data, smetric="manhattan", axis=0)
+        expected = np.array([[0.0, 9.0, 18.0], [9.0, 0.0, 9.0], [18.0, 9.0, 0.0]], dtype=float)
         np.testing.assert_array_almost_equal(result, expected)
 
 
