@@ -9,4 +9,7 @@ class StatItemStatusType(IntEnum):
     TRAIN = 8
     COMPUTED = 16
     CLUSTER = 32
+    MISSING = 64
+    TEST = 128
+    UNSET = 256
     
