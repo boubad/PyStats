@@ -25,11 +25,22 @@ class StatIndex(object):
         return True
 
     def __init__(
-        self, the_size: int = 0, crit: float = None, must_shuffle: bool = False
+        self,
+        the_size: int = None,
+        crit: float = None,
+        initialindex: np.ndarray = None,
+        must_shuffle: bool = False,
     ) -> None:
-        self._criteria = crit
+        self._criteria = None
         self._indexes = None
-        self.initialize_size(the_size, must_shuffle)
+        if crit is not None and crit > 0.0:
+            self.criteria = crit
+        if initialindex is not None:
+            if StatIndex.is_valid_indexes(initialindex):
+                self._indexes = initialindex
+                return
+        if the_size is not None and the_size > 0:
+            self.resize(the_size, must_shuffle)
 
     def __str__(self) -> str:
         if self.valid:

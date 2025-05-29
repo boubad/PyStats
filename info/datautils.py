@@ -82,3 +82,51 @@ def bertin_classes(
     data: np.ndarray, nclasses: int = 5, brefmedian: bool = False
 ) -> list[int]:
     return compute_bertin_classes(data, nclasses, brefmedian)[0]
+
+
+# ===================
+def compute_outliers(adata:np.ndarray) -> tuple[list[int], list[int]]:
+    if adata.ndim != 2:
+        raise ValueError("Input data must be a 2D array.")
+    res = []
+    nrows = adata.shape[0]
+    nvars = adata.shape[1]
+    for ivar in range(nvars):
+        data = adata[:, ivar]
+        q25 = np.percentile(data, 25)
+        q75 = np.percentile(data, 75)
+        cut_off = 1.5 * (q75 - q25)
+        lower = q25 - cut_off
+        upper = q75 + cut_off
+        for i in range(len(data)):
+            x = data[i]
+            if (x < lower) or (x > upper):
+                if i not in res:
+                    res.append(i)
+    keep = []
+    for i in range(nrows):
+        if i not in res:
+            keep.append(i)
+    return (keep, res)
+
+
+def get_outliers_dict(adata:np.ndarray) -> dict:
+    if adata.ndim != 2:
+        raise ValueError("Input data must be a 2D array.")
+    res = {}
+    nvars = adata.shape[1]
+    for ivar in range(nvars):
+        data = adata[:, ivar]
+        q25 = np.percentile(data, 25)
+        q75 = np.percentile(data, 75)
+        cut_off = 1.5 * (q75 - q25)
+        lower = q25 - cut_off
+        upper = q75 + cut_off
+        cur = []
+        for i in range(len(data)):
+            x = data[i]
+            if (x < lower) or (x > upper):
+                cur.append(i)
+        if len(cur) > 0:
+            res[ivar] = cur
+    return res
