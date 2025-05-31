@@ -215,6 +215,17 @@ class StatDataset(object):
                 odict[skey] = xdata
         return names, odict
 
+    def export_items(self) -> list[tuple[str, dict[str, float]]]:
+        items = []
+        if self.valid:
+            nrows = self.rows
+            ncols = self.cols
+            for i in range(nrows):
+                s = self.indnames[i]
+                item = {self.varnames[j]: float(self.data[i, j]) for j in range(ncols)}
+                items.append((s, item))
+        return items
+
     def export_indexes(
         self, rowindexes: np.ndarray, colindexes: np.ndarray
     ) -> tuple[list[str], dict]:
