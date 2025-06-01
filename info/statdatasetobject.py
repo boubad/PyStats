@@ -1,5 +1,5 @@
 from info.baseobject import BaseObject
-from info import doctype_dataset, key_name, key_sigle
+from info import doctype_dataset, key_name, key_sigle, key_variables
 
 
 class StatItemObject(BaseObject):
@@ -41,12 +41,30 @@ class StatItemObject(BaseObject):
             self[key_sigle] = None
 
     @property
+    def variables(self) -> list | None:
+        if key_variables not in self:
+            return None
+        return self[key_variables]
+
+    @variables.setter
+    def variables(self, v: list):
+        if v is not None:
+            if len(v) == 0:
+                self[key_variables] = None
+            else:
+                self[key_variables] = v
+        else:
+            self[key_variables] = None
+
+    @property
     def persist_map(self) -> dict:
         d = super().persist_map
         if self.sigle is not None:
             d[key_sigle] = self.sigle
         if self.name is not None:
             d[key_name] = self.name
+        if self.variables is not None:
+            d[key_variables] = self.variables
         return d
 
     @property
@@ -55,6 +73,8 @@ class StatItemObject(BaseObject):
             super().is_valid
             and self.name is not None
             and self.sigle is not None
+            and self.variables is not None
             and len(self.name) > 0
             and len(self.sigle) > 0
+            and len(self.variables) > 0
         )

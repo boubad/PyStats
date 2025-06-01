@@ -32,9 +32,11 @@ class StatDatasetManager(BaseManager):
             return False
         if datasetname is None or len(datasetname) == 0:
             return False
+        colnames = df.columns.to_list()
         dataset = StatDatasetObject()
         dataset.name = datasetname
         dataset.sigle = datasetname.lower().replace(" ", "_")
+        dataset.variables = colnames
         dataset.observations = "Imported from DataFrame"
         dataset = self.maintains_dataset(dataset)
         if dataset is None:
@@ -63,7 +65,7 @@ class StatDatasetManager(BaseManager):
                     v = v.strip()
                     if len(v) == 0:
                         continue
-                colname = df.columns[j]
+                colname = colnames[j]
                 idata[colname] = v
             if len(idata) == 0:
                 continue
