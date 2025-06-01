@@ -1,4 +1,11 @@
-from info import key_id, key_status, key_doctype, key_rev, key_attachments
+from info import (
+    key_id,
+    key_status,
+    key_doctype,
+    key_rev,
+    key_attachments,
+    key_observations,
+)
 from info.statitemstatustype import StatItemStatusType
 
 
@@ -10,6 +17,7 @@ class BaseObject(dict):
                 self.update(the_dict)
         if the_doctype not in (None, ""):
             self[key_doctype] = the_doctype
+        self[key_status] = StatItemStatusType.ACTIVE
 
     @property
     def doctype(self) -> str | None:
@@ -97,12 +105,32 @@ class BaseObject(dict):
             raise ValueError(f"Attachments must be a dictionary, got {type(s)}")
 
     @property
+    def observations(self) -> str | None:
+        if key_observations not in self:
+            return None
+        return self[key_observations]
+
+    @observations.setter
+    def observations(self, s: str | None):
+        if s is not None:
+            ss = s.strip()
+            if len(ss) == 0:
+                self[key_observations] = None
+            else:
+                # Ensure the string is stripped of leading/trailing whitespace
+                self[key_observations] = ss
+        else:
+            self[key_observations] = None
+
+    @property
     def persist_map(self) -> dict:
         vret = dict()
         if self.id is not None and len(self.id) > 0:
             vret[key_id] = self.id
         if self.doctype is not None and len(self.doctype) > 0:
             vret[key_doctype] = self.doctype
+        if self.observations is not None:
+            vret[key_observations] = self.observations
         if self.status is not None:
             vret[key_status] = self.status
         return vret

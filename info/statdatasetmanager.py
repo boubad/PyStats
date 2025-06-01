@@ -9,6 +9,8 @@ from info import (
 )
 from info.statdatasetobject import StatDatasetObject
 from info.statitemobject import StatItemObject
+from pandas import DataFrame
+import numpy as np
 
 
 class StatDatasetManager(BaseManager):
@@ -22,6 +24,57 @@ class StatDatasetManager(BaseManager):
         super().__init__(
             dburl=dburl, username=username, password=password, dbname=dbname
         )
+
+    def import_from_dataframe(
+        self, df: DataFrame, datasetname: str, indexcol: str = None
+    ) -> bool:
+        if df is None or df.empty:
+            return False
+        if datasetname is None or len(datasetname) == 0:
+            return False
+        dataset = StatDatasetObject()
+        dataset.name = datasetname
+        dataset.sigle = datasetname.lower().replace(" ", "_")
+        dataset.observations = "Imported from DataFrame"
+        dataset = self.maintains_dataset(dataset)
+        if dataset is None:
+            return False
+        datasetid = dataset.id
+        if datasetid is None:
+            return False
+        nrows, ncols = df.shape
+        itemsnames = None
+        if indexcol is not None and indexcol in df.columns:
+            itemsnames = df[indexcol].tolist()
+        else:
+            for i in range(nrows):
+                if itemsnames is None:
+                    itemsnames = []
+                itemsnames.append(f"Item {i + 1}")
+        for i in range(nrows):
+            idata = dict()
+            for j in range(ncols):
+                v = df.iloc[i, j]
+                if v is None:
+                    continue
+                if np.isnan(v):
+                    continue
+                if isinstance(v, str):
+                    v = v.strip()
+                    if len(v) == 0:
+                        continue
+                colname = df.columns[j]
+                idata[colname] = v
+            if len(idata) == 0:
+                continue
+            item = StatItemObject()
+            item.datasetid = datasetid
+            item.name = itemsnames[i]
+            item.data = idata
+            item = self.maintains_dataset_item(item)
+            if item is None:
+                return False
+        return True
 
     def get_datasets_count(self) -> int:
         selector = {key_doctype: doctype_dataset}
