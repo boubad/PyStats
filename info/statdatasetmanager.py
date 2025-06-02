@@ -2,6 +2,7 @@ from info.basemanager import BaseManager
 from info import (
     doctype_dataset,
     doctype_statitem,
+    key_id,
     key_datasetid,
     key_name,
     key_sigle,
@@ -9,7 +10,7 @@ from info import (
 )
 from info.statdatasetobject import StatDatasetObject
 from info.statitemobject import StatItemObject
-from pandas import DataFrame
+import pandas as pd
 import numpy as np
 
 
@@ -26,21 +27,23 @@ class StatDatasetManager(BaseManager):
         )
 
     def import_from_dataframe(
-        self, df: DataFrame, datasetname: str, indexcol: str = None
+        self, df: pd.DataFrame, datasetname: str, indexcol: str = None
     ) -> bool:
         if df is None or df.empty:
             return False
         if datasetname is None or len(datasetname) == 0:
             return False
         colnames = df.columns.to_list()
-        dataset = StatDatasetObject()
-        dataset.name = datasetname
-        dataset.sigle = datasetname.lower().replace(" ", "_")
-        dataset.variables = colnames
-        dataset.observations = "Imported from DataFrame"
-        dataset = self.maintains_dataset(dataset)
+        dataset = self.find_dataset_by_name(datasetname)
         if dataset is None:
-            return False
+            dataset = StatDatasetObject()
+            dataset.name = datasetname
+            dataset.sigle = datasetname.lower().replace(" ", "_")
+            dataset.variables = colnames
+            dataset.observations = "Imported from DataFrame"
+            dataset = self.maintains_dataset(dataset)
+            if dataset is None:
+                return False
         datasetid = dataset.id
         if datasetid is None:
             return False
@@ -49,17 +52,23 @@ class StatDatasetManager(BaseManager):
         if indexcol is not None and indexcol in df.columns:
             itemsnames = df[indexcol].tolist()
         else:
+            xinds = df.index.to_list()
             for i in range(nrows):
                 if itemsnames is None:
                     itemsnames = []
-                itemsnames.append(f"Item {i + 1}")
+                ss = str(xinds[i])
+                itemsnames.append(ss)
         for i in range(nrows):
+            itemname = itemsnames[i]
+            olditem = self.find_dataset_item_by_name(datasetid, itemname)
+            if olditem is not None:
+                continue
             idata = dict()
             for j in range(ncols):
                 v = df.iloc[i, j]
                 if v is None:
                     continue
-                if np.isnan(v):
+                if pd.isnull(v):
                     continue
                 if isinstance(v, str):
                     v = v.strip()
@@ -71,7 +80,7 @@ class StatDatasetManager(BaseManager):
                 continue
             item = StatItemObject()
             item.datasetid = datasetid
-            item.name = itemsnames[i]
+            item.name = itemname
             item.data = idata
             item = self.maintains_dataset_item(item)
             if item is None:
@@ -100,15 +109,15 @@ class StatDatasetManager(BaseManager):
     def find_dataset_by_name(self, name: str) -> StatDatasetObject | None:
         selector = {key_doctype: doctype_dataset, key_name: name}
         man = self.manager
-        r = man.find_doc_by_selector(selector)
+        r = man.get_doc_by_selector(selector)
         if r is None:
             return None
         return StatDatasetObject(r)
 
-    def get_dataset_by_sigle(self, sigle: str) -> StatDatasetObject | None:
+    def find_dataset_by_sigle(self, sigle: str) -> StatDatasetObject | None:
         selector = {key_doctype: doctype_dataset, key_sigle: sigle}
         man = self.manager
-        r = man.find_doc_by_selector(selector)
+        r = man.get_doc_by_selector(selector)
         if r is None:
             return None
         return StatDatasetObject(r)
@@ -132,6 +141,25 @@ class StatDatasetManager(BaseManager):
         if r is None:
             return None
         return StatDatasetObject(r)
+
+    def delete_dataset(self, datasetid: str) -> bool:
+        man = self.manager
+        dataset = self.find_dataset_by_id(datasetid)
+        if dataset is None:
+            return False
+        skip = 0
+        count = 128
+        done = False
+        while not done:
+            items = self.get_dataset_items(datasetid, skip, count, fields=[key_id])
+            nitems = len(items)
+            if nitems > 0:
+                for item in items:
+                    man.remove_doc_by_id(item.id)
+            skip += nitems
+            done = nitems < count
+        man.remove_doc_by_id(datasetid)
+        return True
 
     def _get_dataset_items_count(self, datasetid: str) -> int:
         selector = {

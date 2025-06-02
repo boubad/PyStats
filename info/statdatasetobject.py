@@ -2,7 +2,7 @@ from info.baseobject import BaseObject
 from info import doctype_dataset, key_name, key_sigle, key_variables
 
 
-class StatItemObject(BaseObject):
+class StatDatasetObject(BaseObject):
     def __init__(self, the_dict: dict = None):
         super().__init__(the_dict=the_dict, the_doctype=doctype_dataset)
 
