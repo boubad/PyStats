@@ -10,7 +10,7 @@ def compute_bertin_classes(
     n = data.size
     if nclasses < 2 or nclasses > n:
         raise ValueError(
-            "Number of classes must be between 1 and the number of data points."
+            "Number of classes must be between 2 and the number of data points."
         )
     if n < 2:
         raise ValueError("Input data must contain at least two element.")
